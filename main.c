@@ -1,15 +1,18 @@
-#include "raylib.h"
+#include "portal.h"
 
 int main(void)
 {
-    InitWindow(800, 450, "Raylib Test");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Portal");
+
+    Chell chell = init_chell();
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
-        DrawText("Raylib works!", 300, 200, 30, BLACK);
+        ClearBackground(BLACK);
+
+        draw_chell(&chell);
 
         EndDrawing();
     }

@@ -1,17 +1,33 @@
+# Compiler
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
-LIBS = -lraylib -lX11 -lXrandr -lXi -lXcursor -lXinerama -lGL -lm
 
+# Executable
 TARGET = main
-SOURCES = main.c
 
-$(TARGET): $(SOURCES)
-	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET) $(LIBS)
+# Sources
+SRC = main.c portal.c
+OBJ = $(SRC:.c=.o)
+
+# Compiler flags
+CFLAGS = -Wall -Wextra -std=c17 -g
+
+# Raylib and system libraries
+LDLIBS = -lraylib -lm -ldl -lpthread -lrt -lX11 -lXrandr -lXi -lXcursor -lXinerama -lGL
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $(TARGET) $(LDLIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
-.PHONY: run clean
+rebuild: clean all
+
+.PHONY: all run clean rebuild
