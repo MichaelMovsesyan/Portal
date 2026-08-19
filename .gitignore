@@ -1,0 +1,25 @@
+# Compiled executable
+portal
+
+# Object files
+*.o
+
+# Build directories
+build/
+
+# VS Code
+.vscode/
+
+# Debugging
+*.dSYM/
+core
+core.*
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
