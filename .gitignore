@@ -1,19 +1,18 @@
-# Compiled executable
+# Compiled executables
 main
+portal
 
 # Object files
 *.o
+
+# Raylib source
+raylib/
 
 # Build directories
 build/
 
 # VS Code
 .vscode/
-
-# Debugging
-*.dSYM/
-core
-core.*
 
 # Temporary files
 *.tmp
