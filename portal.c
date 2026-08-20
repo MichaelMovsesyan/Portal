@@ -20,26 +20,29 @@ Portal init_portal() {
 }
 
 void draw_chell(Chell *chell) {
-    DrawRectangle(chell->x, chell->y, chell->width, chell->height, RAYWHITE);
+    DrawRectangle(chell->x, chell->y, chell->width, chell->height, RAYWHITE); 
 }
 
-void draw_portal(Portal *portal) {
+void draw_portal(Portal *portal1, Portal *portal2) {
     Vector2 mouse = GetMousePosition();
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        portal->x = mouse.x;
-        portal->y = mouse.y;
-        portal->active = true;
-        portal->color = ORANGE;
+        portal1->x = mouse.x;
+        portal1->y = mouse.y;
+        portal1->active = true;
+        portal1->color = ORANGE;
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        portal->x = mouse.x;
-        portal->y = mouse.y;
-        portal->active = true;
-        portal->color = BLUE;
+        portal2->x = mouse.x;
+        portal2->y = mouse.y;
+        portal2->active = true;
+        portal2->color = BLUE;
     }
-    if (portal->active) {
-        DrawRectangle(portal->x, portal->y, portal->width, portal->height, portal->color);
+    if (portal1->active) {
+        DrawRectangle(portal1->x, portal1->y, portal1->width, portal1->height, portal1->color);
+    }
+    if (portal2->active) {
+        DrawRectangle(portal2->x, portal2->y, portal2->width, portal2->height, portal2->color);
     }
 }
 

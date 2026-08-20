@@ -29,7 +29,7 @@ Portal init_portal();
 
 void draw_chell(Chell* chell);
 
-void draw_portal(Portal *portal);
+void draw_portal(Portal *portal1, Portal *portal2);
 
 void move_chell(Chell* chell);
 
