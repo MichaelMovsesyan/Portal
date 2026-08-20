@@ -31,6 +31,8 @@ void draw_chell(Chell* chell);
 
 void draw_portal(Portal *portal1, Portal *portal2);
 
+void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2);
+
 void move_chell(Chell* chell);
 
 #endif

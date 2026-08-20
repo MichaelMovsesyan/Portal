@@ -46,6 +46,24 @@ void draw_portal(Portal *portal1, Portal *portal2) {
     }
 }
 
+void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2) {
+    Rectangle chell_rect = {chell->x, chell->y, chell->width, chell->height};
+    Rectangle portal1_rect = {portal1->x, portal1->y, portal1->width, portal1->height};
+    Rectangle portal2_rect = {portal2->x, portal2->y, portal2->width, portal2->height};
+
+    if (CheckCollisionRecs(chell_rect, portal1_rect)) {
+        chell->x = portal2->x + portal2->width;
+        chell->y = portal2->y + portal2->height;
+    }
+    if (CheckCollisionRecs(chell_rect, portal2_rect)) {
+        chell->x = portal1->x + portal1->width;
+        chell->y = portal1->y + portal1->height;
+    }
+
+    chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
+    chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
+}
+
 void move_chell(Chell *chell) {
     if (IsKeyDown(KEY_RIGHT)) {
         chell->x += 1;

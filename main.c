@@ -19,6 +19,8 @@ int main(void)
         draw_chell(&chell);
         draw_portal(&portal1, &portal2);
 
+        check_for_collision(&chell, &portal1, &portal2);
+
         EndDrawing();
     }
 
