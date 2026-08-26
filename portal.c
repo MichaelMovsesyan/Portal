@@ -15,7 +15,8 @@ Chell init_chell() {
 Portal init_portal() {
     Portal portal;
     portal.width = 20;
-    portal.height = 20;
+    portal.height = 40;
+    portal.active = false;
     return portal;
 }
 
@@ -46,18 +47,32 @@ void draw_portal(Portal *portal1, Portal *portal2) {
     }
 }
 
+int new_x(int chell_x, int portal_x) {
+    int new_x = chell_x - portal_x;
+    
+    return new_x * -1;
+}
+
+int new_y(int chell_y, int portal_y) {
+    int new_y = chell_y - portal_y;
+
+    return new_y;
+}
+
 void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2) {
     Rectangle chell_rect = {chell->x, chell->y, chell->width, chell->height};
     Rectangle portal1_rect = {portal1->x, portal1->y, portal1->width, portal1->height};
     Rectangle portal2_rect = {portal2->x, portal2->y, portal2->width, portal2->height};
 
-    if (CheckCollisionRecs(chell_rect, portal1_rect)) {
-        chell->x = portal2->x + portal2->width;
-        chell->y = portal2->y + portal2->height;
-    }
-    if (CheckCollisionRecs(chell_rect, portal2_rect)) {
-        chell->x = portal1->x + portal1->width;
-        chell->y = portal1->y + portal1->height;
+    if (portal1->active && portal2->active) {
+        if (CheckCollisionRecs(chell_rect, portal1_rect)) {
+            chell->x = portal2->x + new_x(chell->x, portal1->x);
+            chell->y = portal2->y + new_y(chell->y, portal1->y);
+        }
+        if (CheckCollisionRecs(chell_rect, portal2_rect)) {
+            chell->x = portal1->x + new_x(chell->x, portal2->x);
+            chell->y = portal1->y + new_y(chell->y, portal2->y);
+        }
     }
 
     chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
