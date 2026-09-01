@@ -14,6 +14,8 @@
 typedef struct {
     int width, height;
     int x, y;
+    double velocity_y;
+    bool grounded;
 } Chell;
 
 typedef struct {
@@ -38,5 +40,7 @@ int new_y(int chell_y, int portal_y);
 void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2);
 
 void move_chell(Chell* chell);
+
+void apply_gravity(Chell *chell);
 
 #endif

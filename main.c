@@ -3,6 +3,7 @@
 int main(void)
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Portal");
+    SetTargetFPS(80);
 
     Chell chell = init_chell();
     Portal portal1 = init_portal();
@@ -11,10 +12,10 @@ int main(void)
     while (!WindowShouldClose())
     {
         BeginDrawing();
-
         ClearBackground(BLACK);
 
         move_chell(&chell);
+        apply_gravity(&chell);
 
         draw_chell(&chell);
         draw_portal(&portal1, &portal2);
