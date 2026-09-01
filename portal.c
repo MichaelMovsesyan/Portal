@@ -27,11 +27,23 @@ Portal init_portal() {
 
 // DRAWING FUNCTIONS
 
-void draw_chell(Chell *chell) {
+void draw_chell(GameState *state) {
+    Chell* chell = &state->chell;
     DrawRectangle(chell->x, chell->y, chell->width, chell->height, RAYWHITE); 
 }
 
-void draw_portal(Portal *portal1, Portal *portal2) {
+void flip_portal(Portal *portal) {
+    int new_width = portal->height;
+    int new_height = portal->width;
+
+    portal->width = new_width;
+    portal->height = new_height;
+}
+
+void draw_portal(GameState *state) {
+
+    Portal* portal1 = &state->portal1;
+    Portal* portal2 = &state->portal2;
     Vector2 mouse = GetMousePosition();
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -73,8 +85,15 @@ int new_y(int chell_y, int portal_y) {
     return new_y;
 }
 
-void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
-{
+void update_rectangles(Chell *chell, Portal *portal1, Portal *portal2) {
+
+}
+
+void check_for_collision(GameState* state) {
+    Chell* chell = &state->chell;
+    Portal* portal1 = &state->portal1;
+    Portal* portal2 = &state->portal2;
+
     Rectangle chell_rect = {
         chell->x,
         chell->y,
@@ -95,7 +114,6 @@ void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
         portal2->width,
         portal2->height
     };
-
 
     if (portal1->active && portal2->active) {
 
@@ -167,7 +185,8 @@ void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
     chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
 
-void move_chell(Chell *chell) {
+void move_chell(GameState *state) {
+    Chell* chell = &state->chell;
 
     chell->old_y = chell->y;
 
@@ -185,12 +204,8 @@ void move_chell(Chell *chell) {
     chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
 
-void apply_gravity(Chell *chell) {
+void apply_gravity(GameState *state) {
+    Chell* chell = &state->chell;
     chell->velocity_y += 0.1;
-
-    if (chell->velocity_y > 5) {
-        chell->velocity_y = 5;
-    }
-
     chell->y += chell->velocity_y;
 }

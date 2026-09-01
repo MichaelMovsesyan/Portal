@@ -26,22 +26,30 @@ typedef struct {
     Color color;
 } Portal;
 
+typedef struct {
+    Chell chell;
+    Portal portal1;
+    Portal portal2;
+} GameState;
+
 Chell init_chell();
 
 Portal init_portal();
 
-void draw_chell(Chell* chell);
+void draw_chell(GameState *state);
 
-void draw_portal(Portal *portal1, Portal *portal2);
+void draw_portal(GameState *state);
 
 int new_x(int chell_x, int portal_x);
 
 int new_y(int chell_y, int portal_y);
 
-void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2);
+void update_rectangles(Chell *chell, Portal *portal1, Portal *portal2);
 
-void move_chell(Chell* chell);
+void check_for_collision(GameState* state);
 
-void apply_gravity(Chell *chell);
+void move_chell(GameState *state);
+
+void apply_gravity(GameState *state);
 
 #endif
