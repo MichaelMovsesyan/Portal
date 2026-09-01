@@ -103,17 +103,24 @@ void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
 
         if (CheckCollisionRecs(chell_rect, portal1_rect)) {
 
-            // Chell is touching the top
-            if (chell->y + chell->height <= portal1->y + 1) {
+            // Coming DOWN onto the top
+            if (chell->old_y + chell->height <= portal1->y &&
+                chell->y + chell->height >= portal1->y) {
+
                 chell->y = portal1->y - chell->height;
+                chell->velocity_y = 0;
+                chell->grounded = true;
             }
 
-            // Chell is touching the bottom
-            else if (chell->y >= portal1->y + portal1->height - 1) {
+            // Coming UP into the bottom
+            else if (chell->old_y >= portal1->y + portal1->height &&
+                    chell->y <= portal1->y + portal1->height) {
+
                 chell->y = portal1->y + portal1->height;
+                chell->velocity_y = 0;
             }
 
-            // Otherwise, teleport
+            // Hit the side
             else {
                 chell->x = portal2->x + new_x(chell->x, portal1->x);
                 chell->y = portal2->y + new_y(chell->y, portal1->y);
@@ -125,17 +132,24 @@ void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
 
         if (CheckCollisionRecs(chell_rect, portal2_rect)) {
 
-            // Chell is touching the top
-            if (chell->y + chell->height <= portal2->y + 1) {
+            // Coming DOWN onto the top
+            if (chell->old_y + chell->height <= portal2->y &&
+                chell->y + chell->height >= portal2->y) {
+
                 chell->y = portal2->y - chell->height;
+                chell->velocity_y = 0;
+                chell->grounded = true;
             }
 
-            // Chell is touching the bottom
-            else if (chell->y >= portal2->y + portal2->height - 1) {
+            // Coming UP into the bottom
+            else if (chell->old_y >= portal2->y + portal2->height &&
+                    chell->y <= portal2->y + portal2->height) {
+
                 chell->y = portal2->y + portal2->height;
+                chell->velocity_y = 0;
             }
 
-            // Otherwise, teleport
+            // Hit the side
             else {
                 chell->x = portal1->x + new_x(chell->x, portal2->x);
                 chell->y = portal1->y + new_y(chell->y, portal2->y);
@@ -154,17 +168,14 @@ void check_for_collision(Chell *chell, Portal *portal1, Portal *portal2)
 }
 
 void move_chell(Chell *chell) {
+
+    chell->old_y = chell->y;
+
     if (IsKeyDown(KEY_RIGHT)) {
         chell->x += 2;
     }
     if (IsKeyDown(KEY_LEFT)) {
         chell->x -= 2;
-    }
-    if (IsKeyDown(KEY_UP)) {
-        chell->y -= 2;
-    }
-    if (IsKeyDown(KEY_DOWN)) {
-        chell->y += 2;
     }
     if (IsKeyPressed(KEY_SPACE) && chell->grounded) {
         chell->velocity_y = -5;

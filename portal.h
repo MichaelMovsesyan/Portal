@@ -16,6 +16,7 @@ typedef struct {
     int x, y;
     double velocity_y;
     bool grounded;
+    double old_y;
 } Chell;
 
 typedef struct {
