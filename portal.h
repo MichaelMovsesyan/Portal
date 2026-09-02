@@ -15,15 +15,24 @@ typedef struct {
     int width, height;
     int x, y;
     double velocity_y;
+    double velocity_x;
     bool grounded;
-    double old_y;
+    double old_x, old_y;
 } Chell;
 
+typedef enum {
+    SIDE_TOP,
+    SIDE_BOTTOM,
+    SIDE_LEFT,
+    SIDE_RIGHT
+} PortalSide;
+
 typedef struct {
-    int x, y;
-    int width, height;
     bool active;
+    int width, height;
+    PortalSide side;
     Color color;
+    Rectangle rect;
 } Portal;
 
 typedef struct {
@@ -38,13 +47,21 @@ Portal init_portal();
 
 void draw_chell(GameState *state);
 
+void draw_portal_indicator(Portal *portal);
+
 void draw_portal(GameState *state);
 
 int new_x(int chell_x, int portal_x);
 
 int new_y(int chell_y, int portal_y);
 
-void update_rectangles(Chell *chell, Portal *portal1, Portal *portal2);
+bool entered_portal(GameState *state, Portal *portal);
+
+Vector2 portal_normal(PortalSide side);
+
+void transform_velocity(Chell *chell, Portal *entrance, Portal *exit);
+
+void teleport_chell(GameState *state, Portal *entrance, Portal *exit);
 
 void check_for_collision(GameState* state);
 

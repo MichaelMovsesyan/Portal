@@ -11,7 +11,12 @@ Chell init_chell() {
     chell.width = 20;
     chell.height = 20;
 
+    chell.velocity_x = 0;
     chell.velocity_y = 0;
+
+    chell.old_x = chell.x;
+    chell.old_y = chell.y;
+
     chell.grounded = false;
 
     return chell;
@@ -19,10 +24,29 @@ Chell init_chell() {
 
 Portal init_portal() {
     Portal portal;
-    portal.width = 20;
-    portal.height = 40;
+
+    portal.width = 40;
+    portal.height = 10;
+    portal.rect = (Rectangle){0, 0, portal.width, portal.height};
+
     portal.active = false;
+    portal.side = SIDE_TOP;
+    portal.color = ORANGE;
     return portal;
+}
+
+void set_portal_side(Portal *portal, PortalSide side) {
+
+    portal->side = side;
+
+    if (side == SIDE_TOP || side == SIDE_BOTTOM) {
+        portal->rect.width = portal->width;
+        portal->rect.height = portal->height;
+    }
+    else {
+        portal->rect.width = portal->height;
+        portal->rect.height = portal->width;
+    }
 }
 
 // DRAWING FUNCTIONS
@@ -32,42 +56,122 @@ void draw_chell(GameState *state) {
     DrawRectangle(chell->x, chell->y, chell->width, chell->height, RAYWHITE); 
 }
 
-void flip_portal(Portal *portal) {
-    int new_width = portal->height;
-    int new_height = portal->width;
+void draw_portal_indicator(Portal *portal) {
 
-    portal->width = new_width;
-    portal->height = new_height;
+    if (portal->side == SIDE_TOP) {
+
+        DrawLine(
+            portal->rect.x,
+            portal->rect.y,
+            portal->rect.x + portal->rect.width,
+            portal->rect.y,
+            WHITE
+        );
+
+    }
+    else if (portal->side == SIDE_BOTTOM) {
+
+        DrawLine(
+            portal->rect.x,
+            portal->rect.y + portal->rect.height,
+            portal->rect.x + portal->rect.width,
+            portal->rect.y + portal->rect.height,
+            WHITE
+        );
+
+    }
+    else if (portal->side == SIDE_LEFT) {
+
+        DrawLine(
+            portal->rect.x,
+            portal->rect.y,
+            portal->rect.x,
+            portal->rect.y + portal->rect.height,
+            WHITE
+        );
+
+    }
+    else if (portal->side == SIDE_RIGHT) {
+
+        DrawLine(
+            portal->rect.x + portal->rect.width,
+            portal->rect.y,
+            portal->rect.x + portal->rect.width,
+            portal->rect.y + portal->rect.height,
+            WHITE
+        );
+    }
 }
 
 void draw_portal(GameState *state) {
 
-    Portal* portal1 = &state->portal1;
-    Portal* portal2 = &state->portal2;
+    Portal *portal1 = &state->portal1;
+    Portal *portal2 = &state->portal2;
+
+    if (IsKeyPressed(KEY_ONE)) {
+        set_portal_side(portal1, SIDE_TOP);
+    }
+
+    if (IsKeyPressed(KEY_TWO)) {
+        set_portal_side(portal1, SIDE_BOTTOM);
+    }
+
+    if (IsKeyPressed(KEY_THREE)) {
+        set_portal_side(portal1, SIDE_LEFT);
+    }
+
+    if (IsKeyPressed(KEY_FOUR)) {
+        set_portal_side(portal1, SIDE_RIGHT);
+    }
+    if (IsKeyPressed(KEY_FIVE)) {
+        set_portal_side(portal2, SIDE_TOP);
+    }
+
+    if (IsKeyPressed(KEY_SIX)) {
+        set_portal_side(portal2, SIDE_BOTTOM);
+    }
+
+    if (IsKeyPressed(KEY_SEVEN)) {
+        set_portal_side(portal2, SIDE_LEFT);
+    }
+
+    if (IsKeyPressed(KEY_EIGHT)) {
+        set_portal_side(portal2, SIDE_RIGHT);
+    }
+
     Vector2 mouse = GetMousePosition();
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        portal1->x = mouse.x;
-        portal1->y = mouse.y;
-        portal1->active = true;
-        portal1->color = ORANGE;
-    }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        portal2->x = mouse.x;
-        portal2->y = mouse.y;
-        portal2->active = true;
-        portal2->color = BLUE;
-    }
-    if (portal1->active) {
-        DrawRectangle(portal1->x, portal1->y, portal1->width, portal1->height, portal1->color);
-    }
-    if (portal2->active) {
-        DrawRectangle(portal2->x, portal2->y, portal2->width, portal2->height, portal2->color);
-    }
-
+    // Middle click removes both portals
     if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) {
         portal1->active = false;
         portal2->active = false;
+    }
+
+    // Left click places portal 1
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        portal1->rect.x = mouse.x;
+        portal1->rect.y = mouse.y;
+        portal1->active = true;
+        portal1->color = ORANGE;
+    }
+
+    // Right click places portal 2
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        portal2->rect.x = mouse.x;
+        portal2->rect.y = mouse.y;
+        portal2->active = true;
+        portal2->color = BLUE;
+    }
+
+    // Draw portals
+    if (portal1->active) {
+        DrawRectangleRec(portal1->rect, portal1->color);
+        draw_portal_indicator(portal1);
+    }
+
+    if (portal2->active) {
+        DrawRectangleRec(portal2->rect, portal2->color);
+        draw_portal_indicator(portal2);
     }
 }
 
@@ -85,102 +189,259 @@ int new_y(int chell_y, int portal_y) {
     return new_y;
 }
 
-void update_rectangles(Chell *chell, Portal *portal1, Portal *portal2) {
+bool entered_portal(GameState *state, Portal *portal) {
 
+    Chell *chell = &state->chell;
+
+    if (portal->side == SIDE_TOP) {
+
+        return (
+            chell->old_y + chell->height <= portal->rect.y &&
+            chell->y + chell->height >= portal->rect.y &&
+            chell->x + chell->width > portal->rect.x &&
+            chell->x < portal->rect.x + portal->rect.width
+        );
+    }
+
+    if (portal->side == SIDE_BOTTOM) {
+
+        return (
+            chell->old_y >= portal->rect.y + portal->rect.height &&
+            chell->y <= portal->rect.y + portal->rect.height &&
+            chell->x + chell->width > portal->rect.x &&
+            chell->x < portal->rect.x + portal->rect.width
+        );
+    }
+
+    if (portal->side == SIDE_LEFT) {
+
+        return (
+            chell->old_x + chell->width <= portal->rect.x &&
+            chell->x + chell->width >= portal->rect.x &&
+            chell->y + chell->height > portal->rect.y &&
+            chell->y < portal->rect.y + portal->rect.height
+        );
+    }
+
+    if (portal->side == SIDE_RIGHT) {
+
+        return (
+            chell->old_x >= portal->rect.x + portal->rect.width &&
+            chell->x <= portal->rect.x + portal->rect.width &&
+            chell->y + chell->height > portal->rect.y &&
+            chell->y < portal->rect.y + portal->rect.height
+        );
+    }
+
+    return false;
 }
 
-void check_for_collision(GameState* state) {
-    Chell* chell = &state->chell;
-    Portal* portal1 = &state->portal1;
-    Portal* portal2 = &state->portal2;
+Vector2 portal_normal(PortalSide side) {
 
-    Rectangle chell_rect = {
-        chell->x,
-        chell->y,
-        chell->width,
-        chell->height
-    };
+    if (side == SIDE_TOP) {
+        return (Vector2){0, -1};
+    }
 
-    Rectangle portal1_rect = {
-        portal1->x,
-        portal1->y,
-        portal1->width,
-        portal1->height
-    };
+    if (side == SIDE_BOTTOM) {
+        return (Vector2){0, 1};
+    }
 
-    Rectangle portal2_rect = {
-        portal2->x,
-        portal2->y,
-        portal2->width,
-        portal2->height
-    };
+    if (side == SIDE_LEFT) {
+        return (Vector2){-1, 0};
+    }
 
-    if (portal1->active && portal2->active) {
+    // SIDE_RIGHT
+    return (Vector2){1, 0};
+}
 
-        // PORTAL 1
+void transform_velocity(Chell *chell, Portal *entrance, Portal *exit) {
 
-        if (CheckCollisionRecs(chell_rect, portal1_rect)) {
+    double vx = chell->velocity_x;
+    double vy = chell->velocity_y;
 
-            // Coming DOWN onto the top
-            if (chell->old_y + chell->height <= portal1->y &&
-                chell->y + chell->height >= portal1->y) {
+    // TOP/BOTTOM -> TOP/BOTTOM
+    if ((entrance->side == SIDE_TOP || entrance->side == SIDE_BOTTOM) &&
+        (exit->side == SIDE_TOP || exit->side == SIDE_BOTTOM)) {
 
-                chell->y = portal1->y - chell->height;
-                chell->velocity_y = 0;
-                chell->grounded = true;
-            }
+        chell->velocity_x = vx;
 
-            // Coming UP into the bottom
-            else if (chell->old_y >= portal1->y + portal1->height &&
-                    chell->y <= portal1->y + portal1->height) {
-
-                chell->y = portal1->y + portal1->height;
-                chell->velocity_y = 0;
-            }
-
-            // Hit the side
-            else {
-                chell->x = portal2->x + new_x(chell->x, portal1->x);
-                chell->y = portal2->y + new_y(chell->y, portal1->y);
-            }
+        if (entrance->side == exit->side) {
+            // Top -> Top or Bottom -> Bottom
+            chell->velocity_y = -vy;
         }
-
-
-        // PORTAL 2
-
-        if (CheckCollisionRecs(chell_rect, portal2_rect)) {
-
-            // Coming DOWN onto the top
-            if (chell->old_y + chell->height <= portal2->y &&
-                chell->y + chell->height >= portal2->y) {
-
-                chell->y = portal2->y - chell->height;
-                chell->velocity_y = 0;
-                chell->grounded = true;
-            }
-
-            // Coming UP into the bottom
-            else if (chell->old_y >= portal2->y + portal2->height &&
-                    chell->y <= portal2->y + portal2->height) {
-
-                chell->y = portal2->y + portal2->height;
-                chell->velocity_y = 0;
-            }
-
-            // Hit the side
-            else {
-                chell->x = portal1->x + new_x(chell->x, portal2->x);
-                chell->y = portal1->y + new_y(chell->y, portal2->y);
-            }
+        else {
+            // Top -> Bottom or Bottom -> Top
+            chell->velocity_y = vy;
         }
     }
 
+    // LEFT/RIGHT -> LEFT/RIGHT
+    else if ((entrance->side == SIDE_LEFT || entrance->side == SIDE_RIGHT) &&
+             (exit->side == SIDE_LEFT || exit->side == SIDE_RIGHT)) {
+
+        chell->velocity_y = vy;
+
+        if (entrance->side == exit->side) {
+            // Left -> Left or Right -> Right
+            chell->velocity_x = -vx;
+        }
+        else {
+            // Left -> Right or Right -> Left
+            chell->velocity_x = vx;
+        }
+    }
+
+    // TOP/BOTTOM -> LEFT/RIGHT
+    else if (entrance->side == SIDE_TOP ||
+             entrance->side == SIDE_BOTTOM) {
+
+        if (entrance->side == SIDE_TOP &&
+            exit->side == SIDE_LEFT) {
+
+            // Down -> Left
+            chell->velocity_x = -vy;
+            chell->velocity_y = -vx;
+        }
+
+        else if (entrance->side == SIDE_TOP &&
+                 exit->side == SIDE_RIGHT) {
+
+            // Down -> Right
+            chell->velocity_x = vy;
+            chell->velocity_y = vx;
+        }
+
+        else if (entrance->side == SIDE_BOTTOM &&
+                 exit->side == SIDE_LEFT) {
+
+            // Up -> Left
+            chell->velocity_x = vy;
+            chell->velocity_y = vx;
+        }
+
+        else if (entrance->side == SIDE_BOTTOM &&
+                 exit->side == SIDE_RIGHT) {
+
+            // Up -> Right
+            chell->velocity_x = -vy;
+            chell->velocity_y = -vx;
+        }
+    }
+
+    // LEFT/RIGHT -> TOP/BOTTOM
+    else {
+
+        if (entrance->side == SIDE_LEFT &&
+            exit->side == SIDE_TOP) {
+
+            chell->velocity_x = -vy;
+            chell->velocity_y = vx;
+        }
+
+        else if (entrance->side == SIDE_RIGHT &&
+                 exit->side == SIDE_TOP) {
+
+            chell->velocity_x = vy;
+            chell->velocity_y = -vx;
+        }
+
+        else if (entrance->side == SIDE_LEFT &&
+                 exit->side == SIDE_BOTTOM) {
+
+            chell->velocity_x = vy;
+            chell->velocity_y = -vx;
+        }
+
+        else if (entrance->side == SIDE_RIGHT &&
+                 exit->side == SIDE_BOTTOM) {
+
+            chell->velocity_x = -vy;
+            chell->velocity_y = vx;
+        }
+    }
+}
+
+void teleport_chell(GameState *state, Portal *entrance, Portal *exit) {
+
+    Chell *chell = &state->chell;
+
+    Vector2 chell_center = {
+        chell->x + chell->width / 2,
+        chell->y + chell->height / 2
+    };
+
+    Vector2 entrance_center = {
+        entrance->rect.x + entrance->rect.width / 2,
+        entrance->rect.y + entrance->rect.height / 2
+    };
+
+    float tangent_offset;
+
+    if (entrance->side == SIDE_TOP ||
+        entrance->side == SIDE_BOTTOM) {
+
+        tangent_offset = chell_center.x - entrance_center.x;
+    }
+    else {
+        tangent_offset = chell_center.y - entrance_center.y;
+    }
+
+    Vector2 exit_center = {
+        exit->rect.x + exit->rect.width / 2,
+        exit->rect.y + exit->rect.height / 2
+    };
+
+    Vector2 new_center = exit_center;
+
+    if (exit->side == SIDE_TOP ||
+        exit->side == SIDE_BOTTOM) {
+
+        new_center.x += tangent_offset;
+    }
+    else {
+        new_center.y += tangent_offset;
+    }
+
+    Vector2 exit_normal = portal_normal(exit->side);
+
+    float offset = 2.0f;
+
+    new_center.x += exit_normal.x *
+                    (chell->width / 2 + offset);
+
+    new_center.y += exit_normal.y *
+                    (chell->height / 2 + offset);
+
+    chell->x = new_center.x - chell->width / 2;
+    chell->y = new_center.y - chell->height / 2;
+
+    // Transform Chell's velocity based on the
+    // orientation of the two portals.
+    transform_velocity(chell, entrance, exit);
+}
+
+void check_for_collision(GameState *state) {
+    Chell *chell = &state->chell;
+    Portal *portal1 = &state->portal1;
+    Portal *portal2 = &state->portal2;
+
+    if (portal1->active && portal2->active) {
+        if (entered_portal(state, portal1)) {
+            teleport_chell(state, portal1, portal2);
+        }
+        else if (entered_portal(state, portal2)) {
+            teleport_chell(state, portal2, portal1);
+        }
+    }
+
+    // Floor collision
     if (chell->y + chell->height >= SCREEN_HEIGHT) {
         chell->y = SCREEN_HEIGHT - chell->height;
         chell->velocity_y = 0;
         chell->grounded = true;
     }
 
+    // Screen wrapping
     chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
     chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
@@ -188,6 +449,7 @@ void check_for_collision(GameState* state) {
 void move_chell(GameState *state) {
     Chell* chell = &state->chell;
 
+    chell->old_x = chell->x;
     chell->old_y = chell->y;
 
     if (IsKeyDown(KEY_RIGHT)) {
@@ -195,6 +457,27 @@ void move_chell(GameState *state) {
     }
     if (IsKeyDown(KEY_LEFT)) {
         chell->x -= 2;
+    }
+
+    chell->x += chell->velocity_x;
+
+    // Friction only while grounded
+    if (chell->grounded) {
+        if (chell->velocity_x > 0) {
+            chell->velocity_x -= 0.05;
+
+            if (chell->velocity_x < 0) {
+                chell->velocity_x = 0;
+            }
+        }
+
+        if (chell->velocity_x < 0) {
+            chell->velocity_x += 0.05;
+
+            if (chell->velocity_x > 0) {
+                chell->velocity_x = 0;
+            }
+        }
     }
     if (IsKeyPressed(KEY_SPACE) && chell->grounded) {
         chell->velocity_y = -5;
