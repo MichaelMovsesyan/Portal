@@ -260,9 +260,7 @@ void transform_velocity(Chell *chell, Portal *entrance, Portal *exit) {
     double vy = chell->velocity_y;
 
     // TOP/BOTTOM -> TOP/BOTTOM
-    if ((entrance->side == SIDE_TOP || entrance->side == SIDE_BOTTOM) &&
-        (exit->side == SIDE_TOP || exit->side == SIDE_BOTTOM)) {
-
+    if ((entrance->side == SIDE_TOP || entrance->side == SIDE_BOTTOM) && (exit->side == SIDE_TOP || exit->side == SIDE_BOTTOM)) {
         chell->velocity_x = vx;
 
         if (entrance->side == exit->side) {
@@ -276,9 +274,7 @@ void transform_velocity(Chell *chell, Portal *entrance, Portal *exit) {
     }
 
     // LEFT/RIGHT -> LEFT/RIGHT
-    else if ((entrance->side == SIDE_LEFT || entrance->side == SIDE_RIGHT) &&
-             (exit->side == SIDE_LEFT || exit->side == SIDE_RIGHT)) {
-
+    else if ((entrance->side == SIDE_LEFT || entrance->side == SIDE_RIGHT) && (exit->side == SIDE_LEFT || exit->side == SIDE_RIGHT)) {
         chell->velocity_y = vy;
 
         if (entrance->side == exit->side) {
@@ -292,35 +288,29 @@ void transform_velocity(Chell *chell, Portal *entrance, Portal *exit) {
     }
 
     // TOP/BOTTOM -> LEFT/RIGHT
-    else if (entrance->side == SIDE_TOP ||
-             entrance->side == SIDE_BOTTOM) {
-
-        if (entrance->side == SIDE_TOP &&
-            exit->side == SIDE_LEFT) {
+    else if (entrance->side == SIDE_TOP || entrance->side == SIDE_BOTTOM) {
+        if (entrance->side == SIDE_TOP && exit->side == SIDE_LEFT) {
 
             // Down -> Left
             chell->velocity_x = -vy;
             chell->velocity_y = -vx;
         }
 
-        else if (entrance->side == SIDE_TOP &&
-                 exit->side == SIDE_RIGHT) {
+        else if (entrance->side == SIDE_TOP && exit->side == SIDE_RIGHT) {
 
             // Down -> Right
             chell->velocity_x = vy;
             chell->velocity_y = vx;
         }
 
-        else if (entrance->side == SIDE_BOTTOM &&
-                 exit->side == SIDE_LEFT) {
+        else if (entrance->side == SIDE_BOTTOM && exit->side == SIDE_LEFT) {
 
             // Up -> Left
             chell->velocity_x = vy;
             chell->velocity_y = vx;
         }
 
-        else if (entrance->side == SIDE_BOTTOM &&
-                 exit->side == SIDE_RIGHT) {
+        else if (entrance->side == SIDE_BOTTOM && exit->side == SIDE_RIGHT) {
 
             // Up -> Right
             chell->velocity_x = -vy;
@@ -331,32 +321,28 @@ void transform_velocity(Chell *chell, Portal *entrance, Portal *exit) {
     // LEFT/RIGHT -> TOP/BOTTOM
     else {
 
-        if (entrance->side == SIDE_LEFT &&
-            exit->side == SIDE_TOP) {
-
-            chell->velocity_x = -vy;
-            chell->velocity_y = vx;
-        }
-
-        else if (entrance->side == SIDE_RIGHT &&
-                 exit->side == SIDE_TOP) {
+        if (entrance->side == SIDE_LEFT && exit->side == SIDE_TOP) {
 
             chell->velocity_x = vy;
             chell->velocity_y = -vx;
         }
 
-        else if (entrance->side == SIDE_LEFT &&
-                 exit->side == SIDE_BOTTOM) {
+        else if (entrance->side == SIDE_RIGHT && exit->side == SIDE_TOP) {
+
+            chell->velocity_x = vy;
+            chell->velocity_y = vx;
+        }
+
+        else if (entrance->side == SIDE_LEFT && exit->side == SIDE_BOTTOM) {
+
+            chell->velocity_x = vy;
+            chell->velocity_y = vx;
+        }
+
+        else if (entrance->side == SIDE_RIGHT && exit->side == SIDE_BOTTOM) {
 
             chell->velocity_x = vy;
             chell->velocity_y = -vx;
-        }
-
-        else if (entrance->side == SIDE_RIGHT &&
-                 exit->side == SIDE_BOTTOM) {
-
-            chell->velocity_x = -vy;
-            chell->velocity_y = vx;
         }
     }
 }
@@ -377,8 +363,7 @@ void teleport_chell(GameState *state, Portal *entrance, Portal *exit) {
 
     float tangent_offset;
 
-    if (entrance->side == SIDE_TOP ||
-        entrance->side == SIDE_BOTTOM) {
+    if (entrance->side == SIDE_TOP || entrance->side == SIDE_BOTTOM) {
 
         tangent_offset = chell_center.x - entrance_center.x;
     }
@@ -393,9 +378,7 @@ void teleport_chell(GameState *state, Portal *entrance, Portal *exit) {
 
     Vector2 new_center = exit_center;
 
-    if (exit->side == SIDE_TOP ||
-        exit->side == SIDE_BOTTOM) {
-
+    if (exit->side == SIDE_TOP || exit->side == SIDE_BOTTOM) {
         new_center.x += tangent_offset;
     }
     else {
@@ -406,11 +389,9 @@ void teleport_chell(GameState *state, Portal *entrance, Portal *exit) {
 
     float offset = 2.0f;
 
-    new_center.x += exit_normal.x *
-                    (chell->width / 2 + offset);
+    new_center.x += exit_normal.x * (chell->width / 2 + offset);
 
-    new_center.y += exit_normal.y *
-                    (chell->height / 2 + offset);
+    new_center.y += exit_normal.y * (chell->height / 2 + offset);
 
     chell->x = new_center.x - chell->width / 2;
     chell->y = new_center.y - chell->height / 2;
@@ -443,7 +424,7 @@ void check_for_collision(GameState *state) {
 
     // Screen wrapping
     chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
-    chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
+    //chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
 
 void move_chell(GameState *state) {
@@ -452,37 +433,32 @@ void move_chell(GameState *state) {
     chell->old_x = chell->x;
     chell->old_y = chell->y;
 
+    // Horizontal acceleration
     if (IsKeyDown(KEY_RIGHT)) {
-        chell->x += 2;
-    }
-    if (IsKeyDown(KEY_LEFT)) {
-        chell->x -= 2;
+        chell->velocity_x += 0.1;
+
+        if (chell->velocity_x > 3) {
+            chell->velocity_x = 3;
+        }
     }
 
+    if (IsKeyDown(KEY_LEFT)) {
+        chell->velocity_x -= 0.1;
+
+        if (chell->velocity_x < -3) {
+            chell->velocity_x = -3;
+        }
+    }
+
+    // Apply horizontal velocity
     chell->x += chell->velocity_x;
 
-    // Friction only while grounded
-    if (chell->grounded) {
-        if (chell->velocity_x > 0) {
-            chell->velocity_x -= 0.05;
-
-            if (chell->velocity_x < 0) {
-                chell->velocity_x = 0;
-            }
-        }
-
-        if (chell->velocity_x < 0) {
-            chell->velocity_x += 0.05;
-
-            if (chell->velocity_x > 0) {
-                chell->velocity_x = 0;
-            }
-        }
-    }
+    // Jump
     if (IsKeyPressed(KEY_SPACE) && chell->grounded) {
         chell->velocity_y = -5;
         chell->grounded = false;
     }
+
     chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
     chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
