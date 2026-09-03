@@ -421,10 +421,13 @@ void check_for_collision(GameState *state) {
         chell->velocity_y = 0;
         chell->grounded = true;
     }
+    if (chell->y <= 1) {
+        chell->y = chell->height;
+        chell->velocity_y = 0;
+    }
 
     // Screen wrapping
     chell->x = (chell->x + SCREEN_WIDTH) % SCREEN_WIDTH;
-    //chell->y = (chell->y + SCREEN_HEIGHT) % SCREEN_HEIGHT;
 }
 
 void move_chell(GameState *state) {
@@ -452,6 +455,17 @@ void move_chell(GameState *state) {
 
     // Apply horizontal velocity
     chell->x += chell->velocity_x;
+
+    // Apply Horizontal Friction
+
+    if (chell->grounded) {
+        if (chell->velocity_x > 0) {
+            chell->velocity_x -= 0.05;
+        }
+        if (chell->velocity_x < 0) {
+            chell->velocity_x += 0.05;
+        }
+    }
 
     // Jump
     if (IsKeyPressed(KEY_SPACE) && chell->grounded) {
